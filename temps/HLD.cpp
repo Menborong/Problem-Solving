@@ -17,59 +17,10 @@ using vStr = vector<string>;
 
 #define all(x) (x).begin(), (x).end()
 
-template <typename T>
-struct Seg{
-    int N;
-    vector<T> seg;
-    Seg(int N, T BASE_VAL = 0): N(N){
-        int siz = 1;
-        while(siz < 2*N) siz <<= 1;
-        seg = vector<T>(siz+1);
-    }
-    T merge(T a, T b){
-        return max(a, b);
-    }
-    void init(int idx, int s, int e, vector<T>& A){
-        if(s == e){
-            seg[idx] = A[s];
-            return;
-        }
-        int m = s+e >> 1;
-        init(idx<<1, s, m, A);
-        init(idx<<1|1, m+1, e, A);
-        seg[idx] = merge(seg[idx<<1], seg[idx<<1|1]);
-    }
-    void update(int tar, int v, int idx, int s, int e){
-        if(tar < s || tar > e) return;
-        if(s == e){
-            seg[idx] = v;
-            return;
-        }
-        int m = s+e >> 1;
-        update(tar, v, idx<<1, s, m);
-        update(tar, v, idx<<1|1, m+1, e);
-        seg[idx] = merge(seg[idx<<1], seg[idx<<1|1]);
-    }
-    T query(int l, int r, int idx, int s, int e){
-        if(r < s || e < l) return 0;
-        if(l <= s && e <= r) return seg[idx];
-        int m = s+e >> 1;
-        T ans = merge(query(l, r, idx<<1, s, m), query(l, r, idx<<1|1, m+1, e));
-        return ans;
-    }
-};
-
 struct HLD{
-    vInt in;
-    vInt pars;
+    int N, root, num;
+    vInt in, pars, depth, top, trSize;
     matInt tree;
-    vInt depth;
-    vInt top;
-    vInt trSize;
-
-    int N;
-    int root;
-    int num;
 
     HLD(int N=1, int root = 1): N(N), root(root){
         in = vInt(N+1);
@@ -115,6 +66,52 @@ struct HLD{
         dfs1(root, 0, adjs);
         dfs2(root);
         dfs3(root);
+    }
+};
+
+////////////////////////////////////////////////////////////////////
+// Example: 트리와 쿼리1 
+// https://www.acmicpc.net/problem/13510
+
+template <typename T>
+struct Seg{
+    int N;
+    vector<T> seg;
+    Seg(int N, T BASE_VAL = 0): N(N){
+        int siz = 1;
+        while(siz < 2*N) siz <<= 1;
+        seg = vector<T>(siz+1);
+    }
+    T merge(T a, T b){
+        return max(a, b);
+    }
+    void init(int idx, int s, int e, vector<T>& A){
+        if(s == e){
+            seg[idx] = A[s];
+            return;
+        }
+        int m = s+e >> 1;
+        init(idx<<1, s, m, A);
+        init(idx<<1|1, m+1, e, A);
+        seg[idx] = merge(seg[idx<<1], seg[idx<<1|1]);
+    }
+    void update(int tar, int v, int idx, int s, int e){
+        if(tar < s || tar > e) return;
+        if(s == e){
+            seg[idx] = v;
+            return;
+        }
+        int m = s+e >> 1;
+        update(tar, v, idx<<1, s, m);
+        update(tar, v, idx<<1|1, m+1, e);
+        seg[idx] = merge(seg[idx<<1], seg[idx<<1|1]);
+    }
+    T query(int l, int r, int idx, int s, int e){
+        if(r < s || e < l) return 0;
+        if(l <= s && e <= r) return seg[idx];
+        int m = s+e >> 1;
+        T ans = merge(query(l, r, idx<<1, s, m), query(l, r, idx<<1|1, m+1, e));
+        return ans;
     }
 };
 
