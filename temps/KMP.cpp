@@ -18,8 +18,8 @@ using vStr = vector<string>;
 #define all(x) (x).begin(), (x).end()
 
 struct KMP{
-    string S, T;
     int N, M;
+    string S, T;
     vInt F;
     KMP(string& S, string& T): S(S), T(T){
         N = S.size();
@@ -35,7 +35,7 @@ struct KMP{
                     F[i] = f+1;
                     break;
                 }
-            };
+            }
         }
     }
     vInt getIdx(){
