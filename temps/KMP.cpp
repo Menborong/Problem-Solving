@@ -55,6 +55,10 @@ struct KMP{
     }
 };
 
+////////////////////////////////////////////////////////////////////
+// Example: 찾기
+// https://www.acmicpc.net/problem/1786
+
 void solve(){
     string S, T;
     getline(cin ,S);

@@ -18,108 +18,92 @@ using vStr = vector<string>;
 #define all(x) (x).begin(), (x).end()
 
 struct Po{
-    int x, y, idx;
+    int x, y;
     bool operator<(Po& b){
         if(x != b.x) return x < b.x;
-        else if (y != b.y) return y < b.y;
-        return idx < b.idx;
+        return y < b.y;
     }
 };
 
+LL ccw(Po& a, Po& b, Po& c){
+    return (LL)(b.x-a.x)*(c.y-b.y) - (LL)(b.y-a.y)*(c.x-b.x);
+}
+
+LL ccw(Po& a, Po& b, Po& c, Po& d){
+    return (LL)(b.x-a.x)*(d.y-c.y) - (LL)(b.y-a.y)*(d.x-c.x);
+}
+
+LL sqDist(Po& a, Po& b){
+    return (LL)(b.x-a.x)*(b.x-a.x) + (LL)(b.y-a.y)*(b.y-a.y);
+}
+
 struct ConvexHull{
-    bool is_lin;
     vector<Po> ps;
-    ConvexHull(vector<Po>& ps): ps(ps){
-        is_lin = false;
-    }
-    LL ccw(Po& p1, Po& p2, Po& p3, Po& p4){
-        LL ans = 0;
-        ans += (LL)(p2.x-p1.x)*(p4.y-p3.y);
-        ans -= (LL)(p2.y-p1.y)*(p4.x-p3.x);
-        return ans;
-    }
-    LL ccw(Po& p1, Po& p2, Po& p3){
-        LL ans = 0;
-        ans += (LL)(p2.x-p1.x)*(p3.y-p2.y);
-        ans -= (LL)(p2.y-p1.y)*(p3.x-p2.x);
-        return ans;
-    }
-    LL sqDist(Po& p1, Po& p2){
-        LL ans = 0;
-        ans += (LL)(p2.x-p1.x)*(p2.x-p1.x);
-        ans += (LL)(p2.y-p1.y)*(p2.y-p1.y);
-        return ans;
-    }
-
-    void run(bool ok_lin = false){
-        auto minE = min_element(all(ps));
-        swap(ps.front(), *minE);
-        
-        sort(1+all(ps), [this](Po& a, Po& b)->bool{
-            LL rot = ccw(ps[0], a, b);
-            if(rot) return rot > 0;
-            else return sqDist(ps[0], a) > sqDist(ps[0], b);
-        });
-        ps.push_back(ps[0]);
-
-        is_lin = true;
-        for(int i=0; i<ps.size()-3; i++){
-            if(ccw(ps[i], ps[i+1], ps[i+2])){
-                is_lin = false;
-                break;
-            }
-        }
-
-        if(is_lin){
-            if(!ok_lin) ps.resize(2);
+    vector<Po> hull;
+    ConvexHull(vector<Po>& ps): ps(ps){}
+    
+    void run(bool on_line = false){
+        if(ps.size() <= 1){
+            hull = ps;
             return;
         }
+        swap(ps.front(), *min_element(all(ps)));
 
-        if(ok_lin){
-            int s = 2, e = 2;
-            while(e < ps.size()){
-                if(ccw(ps[0], ps[1], ps[e]) ==  0) e++;
+        sort(1+all(ps), [&](Po& a, Po& b)->bool{
+            LL rot = ccw(ps[0], a, b);
+            if(rot) return rot > 0;
+            return sqDist(ps[0], a) < sqDist(ps[0], b);
+        });
+        
+        if(on_line){
+            int e;
+            for(e = ps.size()-2; e >= 1; e--){
+                if(ccw(ps[0], ps[e], ps[e+1])) break;
+            }
+            if(e) reverse(1+e+all(ps));
+        }
+        
+        for(auto p: ps){
+            while(hull.size() >= 2){
+                LL tmp = ccw(*(hull.end()-2), *(hull.end()-1), p);
+                if(tmp < 0 || (!on_line && tmp == 0)) hull.pop_back();
                 else break;
             }
-            reverse(ps.begin()+1, ps.begin()+e);
+            hull.push_back(p);
         }
-
-        int l = 1;
-        for(int r=2; r<ps.size(); r++){
-            while(ccw(ps[l-1], ps[l], ps[r]) < 0)
-                l--;
-            if(!ok_lin && ccw(ps[l-1], ps[l], ps[r]) == 0){
-                if(sqDist(ps[l-1], ps[r]) > sqDist(ps[l-1], ps[l]))
-                    ps[l] = ps[r];
-                continue;
-            }
-            ps[++l] = ps[r];
-        }
-
-        ps.resize(l);
+        
     }
 
     pii getLongest(){
         int a = 0; int b = 1;
         int a_opt = a;
         int b_opt = b;
-        int numP = ps.size();
+        int numP = hull.size();
 
         while(true){
             int an = (a+1)%numP;
             int bn = (b+1)%numP;
-            if(ccw(ps[a], ps[an], ps[b], ps[bn]) > 0)
+            if(ccw(hull[a], hull[an], hull[b], hull[bn]) > 0)
                 b = bn;
             else{
                 a = an;
                 if(a == 0) break;
             }
-            if(sqDist(ps[a_opt], ps[b_opt]) < sqDist(ps[a], ps[b])){
+            if(sqDist(hull[a_opt], hull[b_opt]) < sqDist(hull[a], hull[b])){
                 a_opt = a;
                 b_opt = b;
             }
         }
         return {a_opt, b_opt};
+    }
+
+    bool is_in(Po& p){
+        if(hull.size() <= 2) return false;
+        for(int i=0; i<hull.size(); i++){
+            LL res = ccw(hull[i], hull[(i+1)%hull.size()], p);
+            if(res <= 0) return false; 
+        }
+        return true;
     }
 };
 
@@ -130,11 +114,15 @@ void solve(){
     for(int i=0; i<N; i++){
         int x, y;
         cin >> x >> y;
-        PS[i] = {x, y, i};
+        PS[i] = {x, y};
     }
     ConvexHull ch(PS);
-    ch.run();
-    cout << ch.ps.size() << '\n';
+    ch.run(false);
+
+    auto [p1, p2] = ch.getLongest();
+    cout << fixed;
+    cout.precision(20);
+    cout << sqrtl(sqDist(ch.hull[p1], ch.hull[p2])) << '\n';
 }
 
 int main(){
