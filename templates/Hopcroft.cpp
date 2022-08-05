@@ -16,6 +16,8 @@ using matBool = vector<vBool>;
 using vStr = vector<string>;
 
 #define all(x) (x).begin(), (x).end()
+
+// 추가적인 수정이 필요할지 모릅니다...
 struct Hopcroft{
     int N, M;
     matInt adjs;
