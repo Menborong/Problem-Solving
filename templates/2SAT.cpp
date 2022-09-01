@@ -61,14 +61,14 @@ struct SAT{
     void addEdge(int u, int v){
         if(u >> 31) u = NOT(~u);
         if(v >> 31) v = NOT(~v);
-        scc.addEdge(NOT(u), v);
-        scc.addEdge(NOT(v), u);
+        scc.addEdge(u, NOT(v));
+        scc.addEdge(v, NOT(u));
     }
     bool run(){
         scc.run();
         for(int i=1; i<=N; i++){
             if(scc.sids[i] == scc.sids[NOT(i)]) return 0;
-            if(scc.sids[i] > scc.sids[NOT(i)]) ans[i] = 0;
+            if(scc.sids[i] < scc.sids[NOT(i)]) ans[i] = 0;
             else ans[i] = 1;
         }
         return 1;

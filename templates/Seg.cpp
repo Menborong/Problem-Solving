@@ -23,7 +23,7 @@ template <typename T>
 struct Seg{
     int N;
     vector<T> seg;
-    Lazy(int N): N(N){
+    Seg(int N): N(N){
         int siz = 1;
         while(siz < 2*N) siz <<= 1;
         seg = vector<T>(siz+1);
@@ -49,8 +49,8 @@ struct Seg{
             return;
         }
         int m = s+e >> 1;
-        update(l, r, v, idx<<1, s, m);
-        update(l, r, v, idx<<1|1, m+1, e);
+        update(tar, v, idx<<1, s, m);
+        update(tar, v, idx<<1|1, m+1, e);
         seg[idx] = merge(seg[idx<<1], seg[idx<<1|1]);
     }
     T query(int l, int r, int idx, int s, int e){
